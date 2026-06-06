@@ -13,7 +13,7 @@ import pedidos as pedidos_module
 import sheets
 
 load_dotenv()
-TOKEN = "8938378578:AAF8f1TKsRSOMaHdcX3KRZ14WpSIdYCSWz8"
+TOKEN = os.environ.get("TOKEN")
 
 # ───── LOGGING ─────
 logging.basicConfig(

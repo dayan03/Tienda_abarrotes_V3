@@ -1,6 +1,7 @@
 import gspread
 from google.oauth2.service_account import Credentials
 import os
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,12 +11,21 @@ SCOPES = [
     'https://www.googleapis.com/auth/drive'
 ]
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CRED_PATH = os.path.join(BASE_DIR, 'credencials.json')
-
 def conectar():
-    """Conecta con Google Sheets y retorna el libro"""
-    creds = Credentials.from_service_account_file(CRED_PATH, scopes=SCOPES)
+    """Conecta con Google Sheets leyendo credenciales desde variable de entorno o archivo"""
+    
+    # En Render lee desde variable de entorno
+    creds_json = os.environ.get("GOOGLE_CREDS")
+    
+    if creds_json:
+        creds_dict = json.loads(creds_json)
+        creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+    else:
+        # En tu PC local lee desde el archivo
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        CRED_PATH = os.path.join(BASE_DIR, 'credencials.json')
+        creds = Credentials.from_service_account_file(CRED_PATH, scopes=SCOPES)
+    
     client = gspread.authorize(creds)
     libro = client.open("Base_Datos_Abarrotes")
     return libro
