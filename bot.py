@@ -447,7 +447,8 @@ def main():
     app.run_polling()
 
 if __name__ == "__main__":
-    main()    app = ApplicationBuilder().token(TOKEN).build()
+    main()   
+    app = ApplicationBuilder().token(TOKEN).build()
 
     # Conversación: Registro de cliente
     conv_registro = ConversationHandler(
