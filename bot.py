@@ -371,6 +371,12 @@ async def reg_direccion(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return ConversationHandler.END
 
+async def mensaje_desconocido(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "👋 Usa los botones del menú para navegar 👇",
+        reply_markup=teclado_principal()
+    )
+    
 async def cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "❌ Operación cancelada.",
