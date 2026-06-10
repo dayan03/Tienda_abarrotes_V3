@@ -322,10 +322,14 @@ async def registrar(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if clientes.existe_cliente(telegram_id):
         resumen = clientes.resumen_cliente(telegram_id)
+        botones = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🗑️ Eliminar mi registro", callback_data="eliminar_registro")]
+        ])
         await update.message.reply_text(
-            f"✅ ¡Ya estás registrado!\n\n{resumen}",
+            f"✅ ¡Ya estás registrado!\n\n{resumen}\n\n"
+            f"¿Deseas eliminar tu registro?",
             parse_mode='Markdown',
-            reply_markup=teclado_principal()
+            reply_markup=botones
         )
         return ConversationHandler.END
 
@@ -376,13 +380,56 @@ async def mensaje_desconocido(update: Update, context: ContextTypes.DEFAULT_TYPE
         "👋 Usa los botones del menú para navegar 👇",
         reply_markup=teclado_principal()
     )
-    
+
+async def callback_eliminar_registro(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    telegram_id = query.from_user.id
+    data = query.data
+
+    if data == "eliminar_registro":
+        # Pedir confirmación
+        botones = InlineKeyboardMarkup([
+            [InlineKeyboardButton("✅ Sí, eliminar", callback_data="confirmar_eliminar")],
+            [InlineKeyboardButton("❌ No, cancelar", callback_data="cancelar_eliminar")]
+        ])
+        await query.edit_message_text(
+            "⚠️ *¿Estás seguro que deseas eliminar tu registro?*\n\n"
+            "Esta acción no se puede deshacer.",
+            parse_mode='Markdown',
+            reply_markup=botones
+        )
+
+    elif data == "confirmar_eliminar":
+        clientes.eliminar_cliente(telegram_id)
+        await query.edit_message_text(
+            "🗑️ Tu registro ha sido eliminado correctamente.\n\n"
+            "Puedes volver a registrarte cuando quieras con el botón 👤 *Registrarme*",
+            parse_mode='Markdown'
+        )
+
+    elif data == "cancelar_eliminar":
+        await query.edit_message_text(
+            "✅ Operación cancelada. Tu registro sigue activo.",
+            parse_mode='Markdown'
+        )
+
+  
 async def cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "❌ Operación cancelada.",
         reply_markup=teclado_principal()
     )
     return ConversationHandler.END
+
+def eliminar_cliente(telegram_id):
+    """Elimina el registro de un cliente"""
+    sheet = sheets.obtener_hoja("Clientes")
+    _, num_fila = sheets.buscar_fila("Clientes", "Telegram_ID", telegram_id)
+    if num_fila:
+        sheet.delete_rows(num_fila)
+        return True
+    return False
 
 # ══════════════════════════════════════
 #              MAIN
@@ -393,8 +440,21 @@ import threading
 class PingHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.send_header('Content-Length', '14')
         self.end_headers()
         self.wfile.write(b"Bot corriendo OK")
+    
+    def do_HEAD(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.send_header('Content-Length', '14')
+        self.end_headers()
+
+    def do_POST(self):
+        self.send_response(200)
+        self.end_headers()
+
     def log_message(self, format, *args):
         pass
 
