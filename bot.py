@@ -422,7 +422,7 @@ async def cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return ConversationHandler.END
 
-def eliminar_cliente(telegram_id):
+async def eliminar_cliente(telegram_id):
     """Elimina el registro de un cliente"""
     sheet = sheets.obtener_hoja("Clientes")
     _, num_fila = sheets.buscar_fila("Clientes", "Telegram_ID", telegram_id)
